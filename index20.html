@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Физика платформасы | Электр және магнетизм</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        .login-container { background: white; border-radius: 20px; padding: 40px; width: 450px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin: 100px auto; }
+        .role-buttons { display: flex; gap: 15px; margin-bottom: 30px; }
+        .role-btn { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 16px; }
+        .role-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .input-group { margin-bottom: 20px; }
+        .input-group input { width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; }
+        button { background: #667eea; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; }
+        button:hover { background: #5a67d8; }
+        .message { margin-top: 20px; padding: 10px; border-radius: 8px; text-align: center; display: none; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        .student-fields { display: none; }
+        .student-fields.show { display: block; }
+        .teacher-fields { display: none; }
+        .teacher-fields.show { display: block; }
+        .main-panel { display: none; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: #667eea; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 10px; margin-bottom: 20px; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; width: auto; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; text-align: center; }
+        .stat-number { font-size: 32px; font-weight: bold; color: #667eea; }
+        .section-title { margin: 20px 0 15px; border-left: 4px solid #667eea; padding-left: 15px; }
+        .topics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .topic-card { background: white; border-radius: 15px; padding: 20px; }
+        .topic-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .topic-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; width: auto; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-danger { background: #dc3545; color: white; }
+        .teacher-tools { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .tool-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .students-list { max-height: 300px; overflow-y: auto; margin-top: 15px; }
+        .student-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; }
+        .add-student { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .add-student input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1; }
+        .progress-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .points { font-size: 28px; font-weight: bold; color: #667eea; }
+        .level { background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; }
+        .homework { background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .topics-list { display: flex; flex-direction: column; gap: 10px; }
+        .topic-item { background: white; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .badge-gray { background: #6c757d; color: white; padding: 3px 10px; border-radius: 15px; font-size: 12px; }
+        .attention-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,0,0.95); z-index: 10000; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .attention-overlay h1 { color: white; font-size: 48px; }
+        .random-student-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 25px; border-radius: 20px; text-align: center; margin-top: 15px; display: none; }
+        .student-name-big { font-size: 32px; font-weight: bold; margin: 15px 0; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 350px; }
+        .timer-display { font-size: 48px; font-weight: bold; text-align: center; background: #333; color: #0f0; padding: 15px; border-radius: 10px; margin-top: 15px; display: none; }
+        .timer-control { display: flex; gap: 10px; margin: 15px 0; }
+        .timer-control input { width: 80px; padding: 8px; text-align: center; }
+        .chart-container { background: #f8f9fa; padding: 15px; border-radius: 10px; }
+        .chart-bar { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+        .bar { height: 30px; border-radius: 5px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; }
+        .bar-class { background: #667eea; width: 0%; }
+        .bar-home { background: #28a745; width: 0%; }
+    </style>
+</head>
+<body>
+
+<!-- Кіру беті -->
+<div id="loginPage" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="login-container">
+        <h1 style="text-align: center;">🎓 Физика платформасы</h1>
+        <p style="text-align: center; margin-bottom: 30px;">Электр және магнетизм | 8-сынып</p>
+        <div class="role-buttons">
+            <button class="role-btn active" onclick="selectRole('student')">👩‍🎓 Оқушы</button>
+            <button class="role-btn" onclick="selectRole('teacher')">🧑‍🏫 Мұғалім</button>
+        </div>
+        <div id="studentFields" class="student-fields show">
+            <div class="input-group"><input type="text" id="studentName" placeholder="Аты-жөні"></div>
+            <div class="input-group"><input type="text" id="studentClass" placeholder="Сыныбы (8А, 8Б)"></div>
+        </div>
+        <div id="teacherFields" class="teacher-fields">
+            <div class="input-group"><input type="text" id="teacherName" placeholder="Аты-жөні"></div>
+            <div class="input-group"><input type="password" id="teacherPassword" placeholder="Құпия сөз"></div>
+        </div>
+        <button onclick="handleLogin()">🚀 Кіру</button>
+        <div id="message" class="message"></div>
+    </div>
+</div>
+
+<!-- Мұғалім панелі -->
+<div id="teacherPanel" class="main-panel">
+    <header>
+        <h1>🧑‍🏫 Мұғалім панелі</h1>
+        <button class="logout-btn" onclick="logout()">Шығу</button>
+    </header>
+    <div class="stats">
+        <div class="stat-card"><div class="stat-number" id="studentCount">0</div><div>Оқушылар</div></div>
+        <div class="stat-card"><div class="stat-number" id="avgScore">0%</div><div>Орташа нәтиже</div></div>
+        <div class="stat-card"><div class="stat-number" id="classScore">0%</div><div>Сынып нәтижесі</div></div>
+        <div class="stat-card"><div class="stat-number" id="homeScore">0%</div><div>Үй нәтижесі</div></div>
+    </div>
+    
+    <div class="teacher-tools">
+        <h3>🎮 Сабақты басқару</h3>
+        <div class="tool-buttons">
+            <button class="btn btn-danger" onclick="showAttention()">⚠️ НАЗАР!</button>
+            <button class="btn btn-warning" onclick="pickRandomStudent()">🎲 Кездейсоқ оқушы</button>
+            <button class="btn btn-info" onclick="showTimerDialog()">⏱️ Таймер</button>
+        </div>
+        <div id="randomResult" class="random-student-card"></div>
+        <div id="timerDisplay" class="timer-display">00:00</div>
+    </div>
+    
+    <div class="teacher-tools">
+        <h3>📊 Сынып vs Үй аналитикасы</h3>
+        <div id="analyticsChart" class="chart-container"></div>
+        <button class="btn btn-primary" onclick="updateAnalytics()" style="margin-top:10px">🔄 Жаңарту</button>
+        <button class="btn btn-success" onclick="addClassQuestion()" style="margin-top:10px">❓ Сабақ сұрағын қосу</button>
+    </div>
+    
+    <h3 class="section-title">📚 V тарау. ТҰРАҚТЫ ЭЛЕКТР ТОГЫ</h3>
+    <div class="topics-grid" id="topicsV"></div>
+    <h3 class="section-title">📚 VI тарау. ЭЛЕКТРМАГНИТТІК ҚҰБЫЛЫСТАР</h3>
+    <div class="topics-grid" id="topicsVI"></div>
+    
+    <div style="background: white; border-radius: 15px; padding: 20px; margin-top: 20px;">
+        <h3>👥 Оқушылар тізімі</h3>
+        <div class="add-student">
+            <input type="text" id="newStudentName" placeholder="Аты-жөні">
+            <input type="text" id="newStudentClass" placeholder="Сыныбы">
+            <button class="btn btn-success" onclick="addStudent()">➕ Қосу</button>
+        </div>
+        <div id="studentsList" class="students-list"></div>
+    </div>
+</div>
+
+<!-- Оқушы панелі -->
+<div id="studentPanel" class="main-panel">
+    <header>
+        <h1>👩‍🎓 Оқушы панелі</h1>
+        <button class="logout-btn" onclick="logout()">Шығу</button>
+    </header>
+    <div class="progress-card">
+        <div><strong id="studentNameDisplay"></strong><br><span id="studentClassDisplay"></span></div>
+        <div class="points">🏆 <span id="totalPoints">0</span> ұпай</div>
+        <div class="level">📈 Деңгей 1</div>
+    </div>
+    <div class="homework"><strong>🏠 Үй тапсырмасы:</strong><br><span id="homeworkText">Мұғалім берген жоқ</span></div>
+    <div class="homework" style="background:#e8f4f8"><strong>❓ Сабақтағы сұрақтар:</strong><br><div id="questionsList">Сұрақтар жоқ</div></div>
+    <h3 class="section-title">📚 V тарау. ТҰРАҚТЫ ЭЛЕКТР ТОГЫ</h3>
+    <div class="topics-list" id="studentTopicsV"></div>
+    <h3 class="section-title">📚 VI тарау. ЭЛЕКТРМАГНИТТІК ҚҰБЫЛЫСТАР</h3>
+    <div class="topics-list" id="studentTopicsVI"></div>
+</div>
+
+<!-- Attention Overlay -->
+<div id="attentionOverlay" class="attention-overlay">
+    <h1>⚠️ НАЗАР! ⚠️</h1>
+    <h2>Мұғалімді тыңдаңыз!</h2>
+    <button onclick="hideAttention()" style="background:white; color:red; width:auto; padding:10px 30px;">Түсіндім</button>
+</div>
+
+<!-- Таймер модальды -->
+<div id="timerModal" class="modal">
+    <div class="modal-content">
+        <h3>⏱️ Таймер қою</h3>
+        <div class="timer-control">
+            <input type="number" id="timerMin" placeholder="Минут" value="1">
+            <span>:</span>
+            <input type="number" id="timerSec" placeholder="Секунд" value="0">
+        </div>
+        <button class="btn btn-success" onclick="startTimer()">Бастау</button>
+        <button class="btn btn-danger" onclick="closeTimerDialog()" style="margin-top:10px">Жабу</button>
+    </div>
+</div>
+
+<script>
+    // Деректер
+    let students = JSON.parse(localStorage.getItem('students') || '[]');
+    let classQuestions = JSON.parse(localStorage.getItem('classQuestions') || '[]');
+    let timerInterval = null;
+    let currentRole = 'student';
+    
+    // Тақырыптар
+    const topicsV = [
+        {num:22, title:"Электр тогы, электр ток көздері"},
+        {num:23, title:"Электр тізбегі, ток күші, кернеу"},
+        {num:24, title:"Тізбек бөлігі үшін Ом заңы"},
+        {num:25, title:"Өткізгіштің кедергісі, меншікті кедергі"},
+        {num:26, title:"Өткізгіштерді тізбектей және параллель жалғау"},
+        {num:27, title:"Электр тогының жұмысы және қуаты"},
+        {num:28, title:"Джоуль-Ленц заңы"},
+        {num:29, title:"Кедергінің температураға тәуелділігі"},
+        {num:30, title:"Электрқыздырғыш құралдар"},
+        {num:31, title:"Электр тогының химиялық әсері"}
+    ];
+    const topicsVI = [
+        {num:32, title:"Тұрақты магниттер, магнит өрісі"},
+        {num:33, title:"Тогы бар өткізгіштің магнит өрісі"},
+        {num:34, title:"Электрмагниттер"},
+        {num:35, title:"Магнит өрісінің әсері, электрқозғалтқыш"},
+        {num:36, title:"Электрмагниттік индукция, генераторлар"}
+    ];
+    
+    // Рөл таңдау
+    function selectRole(role) {
+        currentRole = role;
+        document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        if(role === 'student') {
+            document.getElementById('studentFields').classList.add('show');
+            document.getElementById('teacherFields').classList.remove('show');
+        } else {
+            document.getElementById('studentFields').classList.remove('show');
+            document.getElementById('teacherFields').classList.add('show');
+        }
+    }
+    
+    // Кіру
+    function handleLogin() {
+        if(currentRole === 'student') {
+            let name = document.getElementById('studentName').value.trim();
+            let cls = document.getElementById('studentClass').value.trim();
+            if(!name || !cls) { showMessage('Аты-жөніңіз бен сыныбыңызды толтырыңыз!', 'error'); return; }
+            localStorage.setItem('currentStudent', JSON.stringify({name:name, class:cls}));
+            showMessage('Кіру сәтті!', 'success');
+            setTimeout(showStudentPanel, 500);
+        } else {
+            let name = document.getElementById('teacherName').value.trim();
+            let pass = document.getElementById('teacherPassword').value;
+            if(!name) { showMessage('Аты-жөніңізді жазыңыз!', 'error'); return; }
+            if(pass === 'teacher2024') {
+                localStorage.setItem('currentTeacher', name);
+                showMessage('Кіру сәтті!', 'success');
+                setTimeout(showTeacherPanel, 500);
+            } else {
+                showMessage('Құпия сөз қате!', 'error');
+            }
+        }
+    }
+    
+    function showMessage(msg, type) {
+        let d = document.getElementById('message');
+        d.textContent = msg;
+        d.className = 'message ' + type;
+        setTimeout(() => d.className = 'message', 2000);
+    }
+    
+    // Панельдерді көрсету
+    function showTeacherPanel() {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('teacherPanel').style.display = 'block';
+        document.getElementById('studentPanel').style.display = 'none';
+        updateStudentsList();
+        updateStats();
+        renderTeacherTopics();
+        updateAnalytics();
+    }
+    
+    function showStudentPanel() {
+        let s = JSON.parse(localStorage.getItem('currentStudent'));
+        if(!s) { logout(); return; }
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('teacherPanel').style.display = 'none';
+        document.getElementById('studentPanel').style.display = 'block';
+        document.getElementById('studentNameDisplay').innerHTML = s.name;
+        document.getElementById('studentClassDisplay').innerHTML = s.class;
+        let hw = localStorage.getItem(`homework_${s.class}`);
+        if(hw) document.getElementById('homeworkText').innerHTML = hw;
+        renderStudentTopics();
+        loadQuestions();
+    }
+    
+    function logout() {
+        localStorage.removeItem('currentStudent');
+        localStorage.removeItem('currentTeacher');
+        document.getElementById('loginPage').style.display = 'flex';
+        document.getElementById('teacherPanel').style.display = 'none';
+        document.getElementById('studentPanel').style.display = 'none';
+    }
+    
+    // Оқушылармен жұмыс
+    function addStudent() {
+        let name = document.getElementById('newStudentName').value.trim();
+        let cls = document.getElementById('newStudentClass').value.trim();
+        if(!name || !cls) { alert('Толтырыңыз!'); return; }
+        students.push({id:Date.now(), name:name, class:cls, classScore:0, homeScore:0});
+        localStorage.setItem('students', JSON.stringify(students));
+        document.getElementById('newStudentName').value = '';
+        document.getElementById('newStudentClass').value = '';
+        updateStudentsList();
+        updateStats();
+    }
+    
+    function updateStudentsList() {
+        let c = document.getElementById('studentsList');
+        if(students.length === 0) { c.innerHTML = '<div>Оқушы жоқ</div>'; return; }
+        c.innerHTML = students.map(s => `<div class="student-item"><div><strong>${s.name}</strong> (${s.class})</div><div>📊 ${s.classScore}% | 🏠 ${s.homeScore}%</div><div><button class="btn btn-danger" onclick="removeStudent(${s.id})" style="width:auto">Өшіру</button></div></div>`).join('');
+    }
+    
+    function removeStudent(id) {
+        students = students.filter(s => s.id != id);
+        localStorage.setItem('students', JSON.stringify(students));
+        updateStudentsList();
+        updateStats();
+    }
+    
+    function updateStats() {
+        document.getElementById('studentCount').innerHTML = students.length;
+        let totalClass = students.reduce((s,sum) => sum + (s.classScore||0), 0);
+        let totalHome = students.reduce((s,sum) => sum + (s.homeScore||0), 0);
+        document.getElementById('classScore').innerHTML = students.length ? Math.round(totalClass/students.length) + '%' : '0%';
+        document.getElementById('homeScore').innerHTML = students.length ? Math.round(totalHome/students.length) + '%' : '0%';
+        document.getElementById('avgScore').innerHTML = students.length ? Math.round((totalClass+totalHome)/(students.length*2)) + '%' : '0%';
+    }
+    
+    function updateAnalytics() {
+        let classAvg = students.length ? students.reduce((s,sum) => sum + (s.classScore||0), 0)/students.length : 0;
+        let homeAvg = students.length ? students.reduce((s,sum) => sum + (s.homeScore||0), 0)/students.length : 0;
+        document.getElementById('analyticsChart').innerHTML = `
+            <div class="chart-bar"><span style="width:80px">Сынып:</span><div class="bar bar-class" style="width:${classAvg}%">${Math.round(classAvg)}%</div></div>
+            <div class="chart-bar"><span style="width:80px">Үй:</span><div class="bar bar-home" style="width:${homeAvg}%">${Math.round(homeAvg)}%</div></div>
+        `;
+    }
+    
+    // Мұғалім тақырыптарын көрсету
+    function renderTeacherTopics() {
+        let v = '', vi = '';
+        topicsV.forEach(t => {
+            v += `<div class="topic-card">
+                <div class="topic-title">§${t.num}. ${t.title}</div>
+                <div class="topic-controls">
+                    <button class="btn btn-primary" onclick="showSimulation(${t.num})">🎮 Симуляция</button>
+                    <button class="btn btn-success" onclick="sendHomeworkToClass(${t.num})">🏠 Үйге беру</button>
+                    <button class="btn btn-warning" onclick="markNotDone(${t.num})">❌ Істемедік</button>
+                </div>
+            </div>`;
+        });
+        topicsVI.forEach(t => {
+            vi += `<div class="topic-card">
+                <div class="topic-title">§${t.num}. ${t.title}</div>
+                <div class="topic-controls">
+                    <button class="btn btn-primary" onclick="showSimulation(${t.num})">🎮 Симуляция</button>
+                    <button class="btn btn-success" onclick="sendHomeworkToClass(${t.num})">🏠 Үйге беру</button>
+                    <button class="btn btn-warning" onclick="markNotDone(${t.num})">❌ Істемедік</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('topicsV').innerHTML = v;
+        document.getElementById('topicsVI').innerHTML = vi;
+    }
+    
+    // Оқушы тақырыптарын көрсету
+    function renderStudentTopics() {
+        let v = '', vi = '';
+        let currentStudent = JSON.parse(localStorage.getItem('currentStudent'));
+        let studentClass = currentStudent ? currentStudent.class : '';
+        let notDone = JSON.parse(localStorage.getItem('notDoneTopics') || '{}');
+        let notDoneList = notDone[studentClass] || [];
+        
+        topicsV.forEach(t => {
+            let badge = notDoneList.includes(t.num) ? ' <span style="background:#dc3545; color:white; padding:2px 8px; border-radius:10px; font-size:10px;">❌ Сабақта істемедік</span>' : '';
+            v += `<div class="topic-item">
+                <div><span class="topic-name">§${t.num}. ${t.title}</span>${badge}</div>
+                <div>🏅 0/10 ұпай</div>
+                <button class="btn btn-primary" onclick="openTopic(${t.num})">📖 Оқу</button>
+            </div>`;
+        });
+        topicsVI.forEach(t => {
+            let badge = notDoneList.includes(t.num) ? ' <span style="background:#dc3545; color:white; padding:2px 8px; border-radius:10px; font-size:10px;">❌ Сабақта істемедік</span>' : '';
+            vi += `<div class="topic-item">
+                <div><span class="topic-name">§${t.num}. ${t.title}</span>${badge}</div>
+                <div>🏅 0/10 ұпай</div>
+                <button class="btn btn-primary" onclick="openTopic(${t.num})">📖 Оқу</button>
+            </div>`;
+        });
+        document.getElementById('studentTopicsV').innerHTML = v;
+        document.getElementById('studentTopicsVI').innerHTML = vi;
+    }
+    
+    // Фишкалар
+    function showAttention() { document.getElementById('attentionOverlay').style.display = 'flex'; }
+    function hideAttention() { document.getElementById('attentionOverlay').style.display = 'none'; }
+    
+    function pickRandomStudent() {
+        if(students.length === 0) { alert('Оқушы жоқ!'); return; }
+        let r = students[Math.floor(Math.random() * students.length)];
+        let d = document.getElementById('randomResult');
+        d.style.display = 'block';
+        d.innerHTML = `<h3>🎲 Кездейсоқ оқушы</h3><div class="student-name-big">${r.name}</div><p>${r.class} сынып</p><button class="btn btn-primary" onclick="document.getElementById('randomResult').style.display='none'" style="width:auto">Жабу</button>`;
+    }
+    
+    function showTimerDialog() { document.getElementById('timerModal').style.display = 'flex'; }
+    function closeTimerDialog() { document.getElementById('timerModal').style.display = 'none'; }
+    
+    function startTimer() {
+        let min = parseInt(document.getElementById('timerMin').value) || 0;
+        let sec = parseInt(document.getElementById('timerSec').value) || 0;
+        let total = min * 60 + sec;
+        if(total <= 0) { alert('Уақыт енгізіңіз!'); return; }
+        closeTimerDialog();
+        let d = document.getElementById('timerDisplay');
+        d.style.display = 'block';
+        let remaining = total;
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if(remaining <= 0) {
+                clearInterval(timerInterval);
+                d.style.display = 'none';
+                alert('⏰ Уақыт бітті!');
+            } else {
+                remaining--;
+                let m = Math.floor(remaining / 60);
+                let s = remaining % 60;
+                d.innerHTML = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }
+        }, 1000);
+    }
+    
+    function sendHomeworkToClass(topicNum) {
+        let text = prompt(`§${topicNum} үй тапсырмасы:`, `${topicNum} тақырыбы бойынша 5 есеп шығару`);
+        if(text) {
+            let classes = [...new Set(students.map(s => s.class))];
+            classes.forEach(c => localStorage.setItem(`homework_${c}`, text));
+            alert(`§${topicNum} үй тапсырмасы жіберілді!`);
+        }
+    }
+    
+    function markNotDone(topicNum) {
+        let className = prompt('Қай сынып?', '8А');
+        if(className) {
+            let notDone = JSON.parse(localStorage.getItem('notDoneTopics') || '{}');
+            if(!notDone[className]) notDone[className] = [];
+            if(!notDone[className].includes(topicNum)) notDone[className].push(topicNum);
+            localStorage.setItem('notDoneTopics', JSON.stringify(notDone));
+            alert(`§${topicNum} "${className}" сыныбында істемедік деп белгіленді`);
+        }
+    }
+    
+    function addClassQuestion() {
+        let q = prompt('Сабақ сұрағын жазыңыз:');
+        if(q) {
+            classQuestions.push({question:q, date:new Date().toLocaleDateString()});
+            localStorage.setItem('classQuestions', JSON.stringify(classQuestions));
+            alert('Сұрақ қосылды!');
+        }
+    }
+    
+    function loadQuestions() {
+        let c = document.getElementById('questionsList');
+        if(classQuestions.length === 0) { c.innerHTML = 'Сұрақтар жоқ'; return; }
+        c.innerHTML = classQuestions.map(q => `<div style="padding:5px 0">❓ ${q.question}<br><small>${q.date}</small></div>`).join('');
+    }
+    
+    function showSimulation(topicNum) {
+        let simInHome = confirm(`§${topicNum} симуляциясы. Бұл симуляцияны үйде қайта ашасыз ба?`);
+        if(simInHome) {
+            alert(`Сілтеме: ${window.location.href}?sim=${topicNum}`);
+        }
+        alert(`§${topicNum} симуляциясы ашылады...`);
+    }
+    
+    function openTopic(topicNum) {
+        alert(`§${topicNum} тақырыбы ашылады!\n\n📹 Видеосабақ\n🎮 Симуляция\n📝 10 тапсырма\n🔬 Виртуалды зертхана`);
+    }
+    
+    // Бастапқы тексеру
+    let savedStudent = localStorage.getItem('currentStudent');
+    let savedTeacher = localStorage.getItem('currentTeacher');
+    if(savedStudent) showStudentPanel();
+    else if(savedTeacher) showTeacherPanel();
+</script>
+</body>
+</html>
